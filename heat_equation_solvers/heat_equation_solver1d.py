@@ -47,7 +47,16 @@ class HeatEquationSolver1D(ABC):
         if self.alpha > 1 / 2:
             raise ValueError("alpha must be below 1/2")
 
+        self.T = [0]
         self.X = np.linspace(0, 1, N + 1)
+
+        # TODO: Add parameter to allow custom initial conditions, implies parameter validation
+        self.u0 = np.sin(
+            np.pi * self.X[1 : self.N] * self.L
+        )  # Initial condition, ensures 0 at boundaries
+        self.u = [self.u0]
+
+        self.M = self._construct_matrix()
         self._solve()
 
     @abstractmethod
@@ -103,5 +112,5 @@ class HeatEquationSolver1D(ABC):
         plt.title("Heat Equation Solution - 1D")
         plt.grid()
         plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
-        plt.tight_layout()  # Adjusts the plot to ensure the legend fits
+        plt.tight_layout()
         plt.show()

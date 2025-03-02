@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from heat_equation_solvers.heat_equation_solver1d import HeatEquationSolver1D
+from scipy.sparse.linalg import spilu
 
 
-class ExplicitHeatEquationSolver1D(HeatEquationSolver1D):
+class ImplicitHeatEquationSolver1D(HeatEquationSolver1D):
     def __init__(self, N, tau, t_max=5, v: float = 0.1, L: int = 1):
         """Initialize the ExplicitHeatEquationSolver object.
         This solver implements the explicit method for solving the heat equation with Dirichlet boundary conditions
@@ -50,14 +51,32 @@ class ExplicitHeatEquationSolver1D(HeatEquationSolver1D):
         Returns:
             numpy.ndarray: A (N-1)x(N-1) tridiagonal matrix used for the explicit scheme calculation
         """
-        return (1 - 2 * self.alpha) * np.eye(self.N - 1) + self.alpha * (
+        return (1 + 2 * self.alpha) * np.eye(self.N - 1) - self.alpha * (
             np.eye(self.N - 1, k=1) + np.eye(self.N - 1, k=-1)
         )
 
     def _solve(self):
-        t = 0
+        """
+        Solves the heat equation implicitly using LU decomposition.
 
+        This method implements the core solving algorithm for the 1D heat equation using
+        an implicit scheme. It performs time stepping using LU decomposition to solve
+        the linear system at each time step.
+
+        The method:
+        1. Initializes time and performs LU decomposition of system matrix
+        2. Iterates through time steps until t_max is reached
+        3. At each step, solves the system using the LU decomposition
+        4. Stores temperature solutions and time points
+
+        Attributes modified:
+            self.T: List of time points
+            self.u: List of solution vectors at each time step
+        """
+        t = 0
+        self.lu = spilu(self.M)
+        self.solve_lu = lambda b: self.lu.solve(b)
         while t < self.t_max:
             t += self.tau
             self.T.append(t)
-            self.u.append(np.dot(self.M, self.u[-1]))
+            self.u.append(self.solve_lu(self.u[-1]))
