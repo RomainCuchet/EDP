@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from heat_equation_solvers.heat_equation_solver1d import HeatEquationSolver1D
+from abc import ABC, abstractmethod
 
 
-class ExplicitHeatEquationSolver1D(HeatEquationSolver1D):
+class HeatEquationSolver1D(ABC):
     def __init__(self, N, tau, t_max=5, v: float = 0.1, L: int = 1):
         """Initialize the ExplicitHeatEquationSolver object.
         This solver implements the explicit method for solving the heat equation with Dirichlet boundary conditions
@@ -36,39 +36,27 @@ class ExplicitHeatEquationSolver1D(HeatEquationSolver1D):
         ValueError
             If alpha > 1/2, which violates the stability condition.
         """
-        super().__init__(N, tau, t_max, v, L)
+        self.N = N
+        self.tau = tau
+        self.t_max = t_max
+        self.v = v
+        self.h = 1 / N
+        self.L = int(np.abs(L) + 0.5)
+        self.alpha = self.v * self.tau / self.h**2
 
+        if self.alpha > 1 / 2:
+            raise ValueError("alpha must be below 1/2")
+
+        self.X = np.linspace(0, 1, N + 1)
+        self._solve()
+
+    @abstractmethod
     def _construct_matrix(self):
-        """
-        Constructs the matrix used in the explicit scheme for solving the heat equation.
+        pass
 
-        The matrix is a tridiagonal matrix of size (N-1)x(N-1) where:
-        - Main diagonal elements are (1 - 2α)
-        - Upper and lower diagonal elements are α
-        - α is the stability parameter (dt/(dx)²)
-
-        Returns:
-            numpy.ndarray: A (N-1)x(N-1) tridiagonal matrix used for the explicit scheme calculation
-        """
-        return (1 - 2 * self.alpha) * np.eye(self.N - 1) + self.alpha * (
-            np.eye(self.N - 1, k=1) + np.eye(self.N - 1, k=-1)
-        )
-
+    @abstractmethod
     def _solve(self):
-        t = 0
-        self.T = [t]
-        # TODO: Add parameter to allow custom initial conditions, implies parameter validation
-        self.u0 = np.sin(
-            np.pi * self.X[1 : self.N] * self.L
-        )  # Initial condition, ensures 0 at boundaries
-        self.u = [self.u0]
-
-        M = self._construct_matrix()
-
-        while t < self.t_max:
-            t += self.tau
-            self.T.append(t)
-            self.u.append(np.dot(M, self.u[-1]))
+        pass
 
     def display_solution(self, times_to_plot: list[float] | float):
         """
