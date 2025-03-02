@@ -6,10 +6,9 @@ from scipy.sparse.linalg import spilu
 
 class ImplicitHeatEquationSolver1D(HeatEquationSolver1D):
     def __init__(self, N, tau, t_max=5, v: float = 0.1, L: int = 1):
-        """Initialize the ExplicitHeatEquationSolver object.
-        This solver implements the explicit method for solving the heat equation with Dirichlet boundary conditions
-        in 1D. The solver uses a finite difference discretization of the heat equation and explicit time stepping.
-        Initial conditions are set to a sine function : sin(pi*L*x) for x in [0,1]. L is set to the closest positive integer to preserve 0 condition at both boundaries
+        """Initialize the ImplicitHeatEquationSolver object.
+        This solver implements the implicit method for solving the heat equation with Dirichlet boundary conditions
+        in 1D. The solver uses a finite difference discretization of the heat equation and implicit time stepping.
         Parameters
         ----------
         N : int

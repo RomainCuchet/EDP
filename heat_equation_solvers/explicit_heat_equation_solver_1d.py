@@ -8,8 +8,6 @@ class ExplicitHeatEquationSolver1D(HeatEquationSolver1D):
         """Initialize the ExplicitHeatEquationSolver object.
         This solver implements the explicit method for solving the heat equation with Dirichlet boundary conditions
         in 1D. The solver uses a finite difference discretization of the heat equation and explicit time stepping.
-        Initial conditions are set to a sine function : sin(pi*L*x) for x in [0,1]. L is set to the closest positive integer to preserve 0 condition at both boundaries
-        Parameters
         ----------
         N : int
             Number of spatial discretization points.
