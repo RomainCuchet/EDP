@@ -67,7 +67,9 @@ class HeatEquationSolver1D(ABC):
     def _solve(self):
         pass
 
-    def display_solution(self, times_to_plot: list[float] | float):
+    def get_solution_plot(
+        self, times_to_plot: list[float] | float, show_plot=True, ax=None
+    ):
         """
         Display the solution of the heat equation at specified time points.
         This method creates a plot showing the temperature distribution along the spatial domain
@@ -77,17 +79,14 @@ class HeatEquationSolver1D(ABC):
         times_to_plot : Union[list[float], float]
             Time point(s) at which to display the solution. Can be a single float value
             or a list of float values representing the times in seconds.
+        show_plot : bool, optional
+            Whether to display the plot (default is True).
+        ax : matplotlib.axes.Axes, optional
+            Axes object to plot on (default is None).
         Returns
         -------
-        None
-            Displays a matplotlib figure showing the temperature distribution.
-        Notes
-        -----
-        - The solution is plotted as temperature (u) vs. position (X)
-        - Each time point is represented as a separate line on the plot
-        - A legend identifies each line with its corresponding time
-        - The grid is enabled for better readability
-        - The legend is positioned outside the plot area to avoid overlap
+        matplotlib.axes.Axes
+            The axes object containing the plot
         """
 
         def get_time_index(t):
@@ -96,21 +95,26 @@ class HeatEquationSolver1D(ABC):
         if not isinstance(times_to_plot, list):
             times_to_plot = [times_to_plot]
 
-        plt.figure()
+        if ax is None:
+            fig, ax = plt.subplots()
 
         for time_to_plot in times_to_plot:
             time_to_plot = get_time_index(time_to_plot)
             if time_to_plot < len(self.u):
-                plt.plot(
+                ax.plot(
                     self.X[1 : self.N],
                     self.u[time_to_plot],
                     label=f"t={self.T[time_to_plot]:.2f} s",
                 )
 
-        plt.xlabel("X")
-        plt.ylabel("u")
-        plt.title("Heat Equation Solution - 1D")
-        plt.grid()
-        plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+        ax.set_xlabel("X")
+        ax.set_ylabel("u")
+        ax.set_title("Heat Equation Solution - 1D")
+        ax.grid()
+        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         plt.tight_layout()
-        plt.show()
+
+        if show_plot:
+            plt.show()
+
+        return ax
