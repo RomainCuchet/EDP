@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 
 
 class ExplicitHeatEquationSolver1D:
-    def __init__(self, N, tau, t_max=5, v: float = 0.1):
+    def __init__(self, N, tau, t_max=5, v: float = 0.1, L: int = 1):
         """Initialize the ExplicitHeatEquationSolver object.
-        This solver implements the explicit method for solving the heat equation.
+        This solver implements the explicit method for solving the heat equation with Dirichlet boundary conditions
+        in 1D. The solver uses a finite difference discretization of the heat equation and explicit time stepping.
+        Initial conditions are set to a sine function : sin(pi*L*x) for x in [0,1]. L is set to the closest positive integer to preserve 0 condition at both boundaries
         Parameters
         ----------
         N : int
@@ -18,6 +20,9 @@ class ExplicitHeatEquationSolver1D:
         v : float, optional
             Thermal diffusivity coefficient (default is 0.1).
         Attributes
+
+        L : int
+            Number of half-wavelengths in the initial condition.
         ----------
         h : float
             Spatial step size, calculated as 1/N.
@@ -35,6 +40,7 @@ class ExplicitHeatEquationSolver1D:
         self.t_max = t_max
         self.v = v
         self.h = 1 / N
+        self.L = int(np.abs(L) + 0.5)
         self.alpha = self.v * self.tau / self.h**2
 
         if self.alpha > 1 / 2:
@@ -64,7 +70,7 @@ class ExplicitHeatEquationSolver1D:
         self.T = [t]
         # TODO: Add parameter to allow custom initial conditions, implies parameter validation
         self.u0 = np.sin(
-            np.pi * self.X[1 : self.N]
+            np.pi * self.X[1 : self.N] * self.L
         )  # Initial condition, ensures 0 at boundaries
         self.u = [self.u0]
 
