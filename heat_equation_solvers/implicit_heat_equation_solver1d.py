@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from heat_equation_solvers.heat_equation_solver1d import HeatEquationSolver1D
-from scipy.sparse.linalg import spilu
+from scipy.linalg import solve_banded
 
 
 class ImplicitHeatEquationSolver1D(HeatEquationSolver1D):
@@ -56,26 +56,29 @@ class ImplicitHeatEquationSolver1D(HeatEquationSolver1D):
 
     def _solve(self):
         """
-        Solves the heat equation implicitly using LU decomposition.
+        Solves the heat equation implicitly using scipy's banded matrix solver.
 
         This method implements the core solving algorithm for the 1D heat equation using
-        an implicit scheme. It performs time stepping using LU decomposition to solve
-        the linear system at each time step.
-
-        The method:
-        1. Initializes time and performs LU decomposition of system matrix
-        2. Iterates through time steps until t_max is reached
-        3. At each step, solves the system using the LU decomposition
-        4. Stores temperature solutions and time points
+        an implicit scheme. It uses scipy's solve_banded function to efficiently solve
+        the tridiagonal system at each time step.
 
         Attributes modified:
             self.T: List of time points
             self.u: List of solution vectors at each time step
         """
         t = 0
-        self.lu = spilu(self.M)
-        self.solve_lu = lambda b: self.lu.solve(b)
+        n = self.N - 1
+
+        # Set up the tridiagonal matrix in banded form
+        ab = np.zeros((3, n))
+        ab[0, 1:] = -self.alpha  # upper diagonal
+        ab[1, :] = 1 + 2 * self.alpha  # main diagonal
+        ab[2, :-1] = -self.alpha  # lower diagonal
+
         while t < self.t_max:
             t += self.tau
             self.T.append(t)
-            self.u.append(self.solve_lu(self.u[-1]))
+
+            # Solve the system using scipy's banded matrix solver
+            x = solve_banded((1, 1), ab, self.u[-1])
+            self.u.append(x)
