@@ -75,6 +75,9 @@ class HeatEquationSolver1D(ABC):
     def _solve(self):
         pass
 
+    def get_time_index(self, t):
+        return int(t / self.tau)
+
     def get_solution_plot(
         self, times_to_plot: list[float] | float, show_plot=True, ax=None
     ):
@@ -97,9 +100,6 @@ class HeatEquationSolver1D(ABC):
             The axes object containing the plot
         """
 
-        def get_time_index(t):
-            return int(t / self.tau)
-
         if not isinstance(times_to_plot, list):
             times_to_plot = [times_to_plot]
 
@@ -107,7 +107,7 @@ class HeatEquationSolver1D(ABC):
             fig, ax = plt.subplots()
 
         for time_to_plot in times_to_plot:
-            time_to_plot = get_time_index(time_to_plot)
+            time_to_plot = self.get_time_index(time_to_plot)
             if time_to_plot < len(self.u):
                 ax.plot(
                     self.X[1 : self.N],
